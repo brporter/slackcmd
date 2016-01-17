@@ -5,7 +5,7 @@ namespace BryanPorter.SlackCmd.CommandParsers
     using BryanPorter.SlackCmd.Models;
 
     public class WeatherCommandParser 
-        : ICommandParser
+        : IWeatherCommandParser
     {
         const string CommandName = "/weather";
 
@@ -19,7 +19,7 @@ namespace BryanPorter.SlackCmd.CommandParsers
                 {
                     CommandText = request.Command,
                     Preamble = null,
-                    Arguments = new[] { request.Text}
+                    Arguments = request.Text.Split(' ')
                 };
 
                 return true;
@@ -28,4 +28,8 @@ namespace BryanPorter.SlackCmd.CommandParsers
             return false;
         }
     }
+
+    public interface IWeatherCommandParser
+        : ICommandParser
+    { }
 }

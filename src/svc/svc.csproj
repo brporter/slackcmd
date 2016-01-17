@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="Models\SlackRequest.cs" />
     <Compile Include="Modules\WeatherModule.cs" />
     <Compile Include="Startup.cs" />
