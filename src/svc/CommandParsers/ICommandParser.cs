@@ -1,7 +1,9 @@
-﻿namespace BryanPorter.SlackCmd.CommandParsers
+﻿using BryanPorter.SlackCmd.Models;
+
+namespace BryanPorter.SlackCmd.CommandParsers
 {
     public interface ICommandParser
     {
-        bool TryParse(string input, out Command command);
+        bool TryParse(SlackRequest request, out Command command);
     }
 }
