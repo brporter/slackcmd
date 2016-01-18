@@ -65,17 +65,20 @@ namespace BryanPorter.SlackCmd.Modules
                                             new SlackField()
                                             {
                                                 Title = "Temperature",
-                                                Value = $"{Math.Round(weatherData.Weather.Temperature, 2)}&deg; {unitString}"
+                                                Value = $"{Math.Round(weatherData.Weather.Temperature, 2)}° {unitString}",
+                                                IsShort = true
                                             },
                                             new SlackField()
                                             {
                                                 Title = "Humidity",
-                                                Value = $"{weatherData.Weather.Humidity}%"
+                                                Value = $"{weatherData.Weather.Humidity}%",
+                                                IsShort = true
                                             }, 
                                             new SlackField()
                                             {
                                                 Title = "Pressure",
-                                                Value = $"{weatherData.Weather.Pressure} hPa"
+                                                Value = $"{weatherData.Weather.Pressure} hPa",
+                                                IsShort = true
                                             }, 
                                         }
                                     }
