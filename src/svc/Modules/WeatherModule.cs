@@ -18,6 +18,7 @@ namespace BryanPorter.SlackCmd.Modules
         : NancyModule
     {
         const string IconUrlFormat = "http://openweathermap.org/img/w/{0}.png";
+        const string ShareArgument = "share";
 
         public WeatherModule(IWeatherCommandParser parser, IWeatherClient client)
         {
@@ -34,6 +35,11 @@ namespace BryanPorter.SlackCmd.Modules
                         var units = c.Arguments.Count() == 2
                             ? (Units) Enum.Parse(typeof (Units), c.Arguments.ElementAt(1), true)
                             : Units.Imperial;
+
+                        var responseType =
+                            c.Arguments.Any(arg => arg.Equals(ShareArgument, StringComparison.OrdinalIgnoreCase))
+                                ? ResponseType.InChannel
+                                : ResponseType.Ephemeral;
 
                         var weatherData = await client.GetWeatherAsync(postalCode, units);
                         var currentCondition = weatherData.WeatcherCondition.FirstOrDefault();
