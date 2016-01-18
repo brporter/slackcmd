@@ -133,35 +133,7 @@ namespace BryanPorter.SlackCmd.Modules
                 var result = await client.GetStringAsync(requestUrl);
 
                 return JsonConvert.DeserializeObject<WeatherResponse>(result);
-
-                //JObject obj = JsonConvert.DeserializeObject<JObject>(result);
-
-                //string temperatureString;
-
-                //switch (unit)
-                //{
-                //    case Units.Metric:
-                //        temperatureString =
-                //            $"Currently it's {KelvinToMetric(obj["main"]["temp"].Value<float>())}C in {obj["name"].Value<string>()}.";
-                //        break;
-                //    default:
-                //        temperatureString =
-                //            $"Currently it's {KelvinToImperial(obj["main"]["temp"].Value<float>())}F in {obj["name"].Value<string>()}.";
-                //        break;
-                //}
-
-                //return temperatureString;
             }
-
-            //float KelvinToImperial(float value)
-            //{
-            //    return (float) ((value - 273.15)*1.8) + 32;
-            //}
-
-            //float KelvinToMetric(float value)
-            //{
-            //    return (float) (value - 273.15);
-            //}
         }
     }
 }
