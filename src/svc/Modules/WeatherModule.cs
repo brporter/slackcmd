@@ -14,10 +14,11 @@ namespace BryanPorter.SlackCmd.Modules
     using Models;
     using CommandParsers;
 
-
     public class WeatherModule
         : NancyModule
     {
+        const string IconUrlFormat = "http://openweathermap.org/img/w/{0}.png";
+
         public WeatherModule(IWeatherCommandParser parser, IWeatherClient client)
         {
             Post["/weather", true] = async (_, token) =>
@@ -34,19 +35,49 @@ namespace BryanPorter.SlackCmd.Modules
                             ? (Units) Enum.Parse(typeof (Units), c.Arguments.ElementAt(1), true)
                             : Units.Imperial;
 
-                        var temperatureString = await client.GetWeatherAsync(postalCode, units);
+                        var weatherData = await client.GetWeatherAsync(postalCode, units);
+                        var currentCondition = weatherData.WeatcherCondition.FirstOrDefault();
+
+                        var unitString = units == Units.Imperial ? "F" : "C";
+                        var currentConditionIconUrl = string.Empty;
+                        var currentConditionText = string.Empty;
+
+                        if (currentCondition != null)
+                        {
+                            currentConditionIconUrl = string.Format(IconUrlFormat, currentCondition.IconId);
+                            currentConditionText = $"{currentCondition.Main} - {currentCondition.Description}";
+                        }
 
                         return
                             new SlackResponse()
                             {
-                                ResponseType = ResponseType.InChannel,
-                                Text = temperatureString,
+                                ResponseType = ResponseType.Ephemeral,
+                                Text = $"Here's the current weather for {weatherData.CityName}!",
                                 Attachments = new[]
                                 {
                                     new SlackResponseAttachment()
                                     {
-                                        Title = "bryanporter.com",
-                                        TitleLink = "http://bryanporter.com"
+                                        Title = "Current Conditions",
+                                        ThumbUrl = currentConditionIconUrl,
+                                        Text = currentConditionText,
+                                        Fields = new []
+                                        {
+                                            new SlackField()
+                                            {
+                                                Title = "Temperature",
+                                                Value = $"{Math.Round(weatherData.Weather.Temperature, 2)}&deg; {unitString}"
+                                            },
+                                            new SlackField()
+                                            {
+                                                Title = "Humidity",
+                                                Value = $"{weatherData.Weather.Humidity}%"
+                                            }, 
+                                            new SlackField()
+                                            {
+                                                Title = "Pressure",
+                                                Value = $"{weatherData.Weather.Pressure} hPa"
+                                            }, 
+                                        }
                                     }
                                 }
                             };
@@ -75,51 +106,53 @@ namespace BryanPorter.SlackCmd.Modules
 
         public interface IWeatherClient
         {
-            Task<string> GetWeatherAsync(string postalCode, Units unit);
+            Task<WeatherResponse> GetWeatherAsync(string postalCode, Units unit);
         }
 
         public class WeatherClient
             : IWeatherClient
         {
-            const string ZipCodeApiUrl = "http://api.openweathermap.org/data/2.5/weather?zip={0},us&appid={1}";
+            const string ZipCodeApiUrl = "http://api.openweathermap.org/data/2.5/weather?zip={0},us&appid={1}&units={2}";
 
             static readonly Lazy<string> _apiKey =
                 new Lazy<string>(() => ConfigurationManager.AppSettings["OpenWeatherMap-ApiKey"]);
 
-            public async Task<string> GetWeatherAsync(string postalCode, Units unit)
+            public async Task<WeatherResponse> GetWeatherAsync(string postalCode, Units unit)
             {
                 var client = new HttpClient();
-                var requestUrl = string.Format(ZipCodeApiUrl, postalCode, _apiKey.Value);
+                var requestUrl = string.Format(ZipCodeApiUrl, postalCode, _apiKey.Value, unit);
                 var result = await client.GetStringAsync(requestUrl);
 
-                JObject obj = JsonConvert.DeserializeObject<JObject>(result);
+                return JsonConvert.DeserializeObject<WeatherResponse>(result);
 
-                string temperatureString;
+                //JObject obj = JsonConvert.DeserializeObject<JObject>(result);
 
-                switch (unit)
-                {
-                    case Units.Metric:
-                        temperatureString =
-                            $"Currently it's {KelvinToMetric(obj["main"]["temp"].Value<float>())}C in {obj["name"].Value<string>()}.";
-                        break;
-                    default:
-                        temperatureString =
-                            $"Currently it's {KelvinToImperial(obj["main"]["temp"].Value<float>())}F in {obj["name"].Value<string>()}.";
-                        break;
-                }
+                //string temperatureString;
 
-                return temperatureString;
+                //switch (unit)
+                //{
+                //    case Units.Metric:
+                //        temperatureString =
+                //            $"Currently it's {KelvinToMetric(obj["main"]["temp"].Value<float>())}C in {obj["name"].Value<string>()}.";
+                //        break;
+                //    default:
+                //        temperatureString =
+                //            $"Currently it's {KelvinToImperial(obj["main"]["temp"].Value<float>())}F in {obj["name"].Value<string>()}.";
+                //        break;
+                //}
+
+                //return temperatureString;
             }
 
-            float KelvinToImperial(float value)
-            {
-                return (float) ((value - 273.15)*1.8) + 32;
-            }
+            //float KelvinToImperial(float value)
+            //{
+            //    return (float) ((value - 273.15)*1.8) + 32;
+            //}
 
-            float KelvinToMetric(float value)
-            {
-                return (float) (value - 273.15);
-            }
+            //float KelvinToMetric(float value)
+            //{
+            //    return (float) (value - 273.15);
+            //}
         }
     }
 }

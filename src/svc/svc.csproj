@@ -112,6 +112,7 @@
     <Compile Include="FieldNameConverter.cs" />
     <Compile Include="Models\SlackRequest.cs" />
     <Compile Include="Models\SlackResponse.cs" />
+    <Compile Include="Models\WeatherResponse.cs" />
     <Compile Include="Modules\WeatherModule.cs" />
     <Compile Include="Startup.cs" />
     <None Include="Web.Debug.config">
