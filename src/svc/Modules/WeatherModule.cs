@@ -1,4 +1,6 @@
-﻿using Nancy.Responses;
+﻿using System.Collections;
+using System.Collections.Generic;
+using Nancy.Responses;
 
 namespace BryanPorter.SlackCmd.Modules
 {
@@ -20,6 +22,8 @@ namespace BryanPorter.SlackCmd.Modules
         const string IconUrlFormat = "http://openweathermap.org/img/w/{0}.png";
         const string ShareArgument = "share";
 
+        readonly Lazy<IEnumerable<string>> _units = new Lazy<IEnumerable<string>>(() => Enum.GetNames(typeof(Units)));
+
         public WeatherModule(IWeatherCommandParser parser, IWeatherClient client)
         {
             Post["/weather", true] = async (_, token) =>
@@ -32,9 +36,12 @@ namespace BryanPorter.SlackCmd.Modules
                     if (parser.TryParse(request, out c))
                     {
                         var postalCode = c.Arguments.First();
-                        var units = c.Arguments.Count() == 2
-                            ? (Units) Enum.Parse(typeof (Units), c.Arguments.ElementAt(1), true)
-                            : Units.Imperial;
+
+                        var unitArg = c.Arguments.FirstOrDefault(arg => UnitValues.Contains(arg));
+
+                        var units = string.IsNullOrWhiteSpace(unitArg)
+                            ? Units.Imperial
+                            : (Units) Enum.Parse(typeof (Units), unitArg, true);
 
                         var responseType =
                             c.Arguments.Any(arg => arg.Equals(ShareArgument, StringComparison.OrdinalIgnoreCase))
@@ -57,7 +64,7 @@ namespace BryanPorter.SlackCmd.Modules
                         return
                             new SlackResponse()
                             {
-                                ResponseType = ResponseType.Ephemeral,
+                                ResponseType = responseType,
                                 Text = $"Here's the current weather for {weatherData.CityName}!",
                                 Attachments = new[]
                                 {
@@ -101,6 +108,8 @@ namespace BryanPorter.SlackCmd.Modules
                 return DefaultResponse();
             };
         }
+
+        IEnumerable<string> UnitValues => _units.Value;
 
         string DefaultResponse()
         {
