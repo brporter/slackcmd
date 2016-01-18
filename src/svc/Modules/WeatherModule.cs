@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using Nancy.Responses;
 
 namespace BryanPorter.SlackCmd.Modules
 {
@@ -10,6 +10,7 @@ namespace BryanPorter.SlackCmd.Modules
     using System.Configuration;
     using System.Linq;
     using System.Net.Http;
+    using System.Threading.Tasks;
     using Models;
     using CommandParsers;
 
@@ -33,7 +34,22 @@ namespace BryanPorter.SlackCmd.Modules
                             ? (Units) Enum.Parse(typeof (Units), c.Arguments.ElementAt(1), true)
                             : Units.Imperial;
 
-                        return await client.GetWeatherAsync(postalCode, units);
+                        var temperatureString = await client.GetWeatherAsync(postalCode, units);
+
+                        return
+                            new SlackResponse()
+                            {
+                                ResponseType = ResponseType.InChannel,
+                                Text = temperatureString,
+                                Attachments = new[]
+                                {
+                                    new SlackResponseAttachment()
+                                    {
+                                        Title = "bryanporter.com",
+                                        TitleLink = "http://bryanporter.com"
+                                    }
+                                }
+                            };
                     }
                 }
                 catch
@@ -78,15 +94,21 @@ namespace BryanPorter.SlackCmd.Modules
 
                 JObject obj = JsonConvert.DeserializeObject<JObject>(result);
 
+                string temperatureString;
+
                 switch (unit)
                 {
                     case Units.Metric:
-                        return string.Format("Currently it's {0}C in {1}.",
-                            KelvinToMetric(obj["main"]["temp"].Value<float>()), obj["name"].Value<string>());
+                        temperatureString =
+                            $"Currently it's {KelvinToMetric(obj["main"]["temp"].Value<float>())}C in {obj["name"].Value<string>()}.";
+                        break;
                     default:
-                        return string.Format("Currently it's {0}F in {1}.",
-                            KelvinToImperial(obj["main"]["temp"].Value<float>()), obj["name"].Value<string>());
+                        temperatureString =
+                            $"Currently it's {KelvinToImperial(obj["main"]["temp"].Value<float>())}F in {obj["name"].Value<string>()}.";
+                        break;
                 }
+
+                return temperatureString;
             }
 
             float KelvinToImperial(float value)

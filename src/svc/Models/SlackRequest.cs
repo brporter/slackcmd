@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BryanPorter.SlackCmd.Models
 {
@@ -13,22 +14,22 @@ namespace BryanPorter.SlackCmd.Models
     {
         public string Token { get; set; }
 
-        public string Team_Id { get; set; }
+        public string TeamId { get; set; }
 
-        public string Team_Domain { get; set; }
+        public string TeamDomain { get; set; }
 
-        public string Channel_Id { get; set; }
+        public string ChannelId { get; set; }
 
-        public string Channel_Name { get; set; }
+        public string ChannelName { get; set; }
 
-        public string User_Id { get; set; }
+        public string UserId { get; set; }
 
-        public string User_Name { get; set; }
+        public string UserName { get; set; }
 
         public string Command { get; set; }
 
         public string Text { get; set; }
 
-        public string Response_Url { get; set; }
+        public string ResponseUrl { get; set; }
     }
 }

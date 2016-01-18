@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BryanPorter.SlackCmd.CommandParsers;
 using BryanPorter.SlackCmd.Modules;
+using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Ninject;
 using Ninject;
 
@@ -20,6 +21,17 @@ namespace BryanPorter.SlackCmd
             // Weather Module
             existingContainer.Bind<IWeatherCommandParser>().To<WeatherCommandParser>();
             existingContainer.Bind<WeatherModule.IWeatherClient>().To<WeatherModule.WeatherClient>();
+        }
+
+        protected override NancyInternalConfiguration InternalConfiguration
+        {
+            get
+            {
+                var internalConfig = base.InternalConfiguration;
+                internalConfig.FieldNameConverter = typeof (FieldNameConverter);
+
+                return internalConfig;
+            }
         }
     }
 }
